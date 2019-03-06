@@ -28,7 +28,7 @@ parser.add_argument('--restore_from', default=None,
 
 if __name__ == '__main__':
     # Set the random seed for the whole graph for reproductible experiments
-    tf.set_random_seed(230)
+    # tf.set_random_seed(230)
 
     # Load the parameters from json file
     args = parser.parse_args()
