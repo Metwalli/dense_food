@@ -28,13 +28,20 @@ parser.add_argument('--restore_from', default=None,
 
 if __name__ == '__main__':
     # Set the random seed for the whole graph for reproductible experiments
-    # tf.set_random_seed(230)
+    tf.set_random_seed(230)
 
     # Load the parameters from json file
     args = parser.parse_args()
     json_path = os.path.join(args.model_dir, 'params.json')
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
+
+    # select cpu or gpu
+    device_name = args.device_name
+    if device_name == "gpu":
+        device_name = "/gpu:0"
+    else:
+        device_name = "/cpu:0"
 
     # Check that we are not overwriting some previous experiment
     # Comment these lines if you are developing your model and don't care about overwritting
