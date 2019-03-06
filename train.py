@@ -36,13 +36,6 @@ if __name__ == '__main__':
     assert os.path.isfile(json_path), "No json configuration file found at {}".format(json_path)
     params = Params(json_path)
 
-    # select cpu or gpu
-    device_name = args.device_name
-    if device_name == "gpu":
-        device_name = "/gpu:0"
-    else:
-        device_name = "/cpu:0"
-
     # Check that we are not overwriting some previous experiment
     # Comment these lines if you are developing your model and don't care about overwritting
     model_dir_has_best_weights = os.path.isdir(os.path.join(args.model_dir, "best_weights"))
@@ -60,8 +53,8 @@ if __name__ == '__main__':
 
     # Get the filenames from the train and dev sets
 
-    train_filenames, train_labels = get_images_data(data_dir, "train.txt", 750, params.num_labels)
-    eval_filenames, eval_labels = get_images_data(data_dir, "test.txt", 250, params.num_labels)
+    train_filenames, train_labels = get_images_data(data_dir, "train")
+    eval_filenames, eval_labels = get_images_data(data_dir, "test")
 
     # train_filenames = [os.path.join(train_data_dir, f) for f in os.listdir(train_data_dir)
     #                    if f.endswith('.jpg')]
