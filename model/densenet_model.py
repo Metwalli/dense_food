@@ -62,7 +62,6 @@ class DenseNet():
             if self.params.dropout_rate > 0:
                 x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
             x = Average_pooling(x, pool_size=[2,2], stride=2)
-
             return x
 
     def dense_block(self, input_x, nb_layers, layer_name):
@@ -83,22 +82,24 @@ class DenseNet():
         out = images
         with tf.variable_scope('DenseNet-v', reuse=self.reuse):
             out = conv_layer(out, filter=self.num_filters, kernel=[7,7], stride=2, layer_name='conv0')
+            out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
+            out = tf.nn.relu(out)
             out = Max_Pooling(out, pool_size=[3,3], stride=2)
             # define list contain the number layers in blocks the length of list based on the number blocks in the model
 
-            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_1')
+            out = self.dense_block(input_x=out, nb_layers=6, layer_name='dense_1')
             out = self.transition_layer(out, scope='trans_1')
             # self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_2')
+            out = self.dense_block(input_x=out, nb_layers=12, layer_name='dense_2')
             out = self.transition_layer(out, scope='trans_2')
             # self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=1, layer_name='dense_3')
+            out = self.dense_block(input_x=out, nb_layers=24, layer_name='dense_3')
             out = self.transition_layer(out, scope='trans_3')
             # self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=1, layer_name='dense_4')
+            out = self.dense_block(input_x=out, nb_layers=16, layer_name='dense_4')
             # self.num_filters = int(self.num_filters * self.params.compression_rate)
 
             # num_layers_in_block = [1, 1, 1]
@@ -119,7 +120,8 @@ class DenseNet():
             with tf.variable_scope('fc_1'):
                 fc1 = tf.layers.dense(out, self.num_filters)
                 # Apply Dropout (if is_training is False, dropout is not applied)
-                fc1 = tf.layers.dropout(fc1, rate=self.params.dropout_rate, training=self.is_training)
+                if self.params.dropout_rate >0:
+                    fc1 = tf.layers.dropout(fc1, rate=self.params.dropout_rate, training=self.is_training)
                 # if self.params.use_batch_norm:
                 #     out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
                 fc1 = tf.nn.relu(fc1)
