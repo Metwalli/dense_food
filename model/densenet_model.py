@@ -60,7 +60,8 @@ class DenseNet():
             x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
             x = tf.nn.relu(x)
             x = conv_layer(x, filter=self.num_filters, kernel=[1,1], layer_name=scope+'_conv1')
-            # x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
+            if self.params.dropout_rate > 0:
+                x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
             x = Average_pooling(x, pool_size=[2,2], stride=2)
 
             return x
