@@ -32,18 +32,33 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/SIGNS', help="Directory with the SIGNS dataset")
 parser.add_argument('--output_dir', default='data/64x64_SIGNS', help="Where to write the new data")
 
+
+def class_to_index_mapping(data_dir):
+    class_to_ix = {}
+    ix_to_class = {}
+    with open(os.path.join(data_dir, "meta/classes.txt")) as txt:
+        classes = [l.strip() for l in txt.readlines()]
+        class_to_ix = dict(zip(classes, range(len(classes))))
+        ix_to_class = dict(zip(range(len(classes)), classes))
+        class_to_ix = {v: k for k, v in ix_to_class.items()}
+    # sorted_class_to_ix = collections.OrderedDict(sorted(class_to_ix.items()))
+        return class_to_ix, ix_to_class
+
 def get_images_data(data_dir, file_name, no_per_class, num_labels):
     imagesPaths = []
-
+    labels = []
+    class_to_ix, ix_to_class = class_to_index_mapping(data_dir)
     with open(os.path.join(data_dir, "meta", file_name)) as t:
         train_data = t.read().splitlines()
         for d in train_data:
+            class_name = d.split('/')[0]
+            labels.append(class_to_ix[class_name])
             imagesPaths.append(os.path.join(data_dir, "images", d + ".jpg"))
-    labels = np.ones(len(imagesPaths), dtype='int32')
-    labels[:no_per_class] = 0
-    for i in range(num_labels - 1):
-        labels[(i + 1) * no_per_class:(i + 2) * no_per_class] = i + 1
-    # labels[params.num_labels * no_per_class:] = params.num_labels
+    # labels = np.ones(len(imagesPaths), dtype='int32')
+    # labels[:no_per_class] = 0
+    # for i in range(num_labels - 1):
+    #     labels[(i + 1) * no_per_class:(i + 2) * no_per_class] = i + 1
+    # # labels[params.num_labels * no_per_class:] = params.num_labels
     return imagesPaths, labels
 
 def resize_and_save(filename, output_dir, size=SIZE):
@@ -66,8 +81,8 @@ if __name__ == '__main__':
 
     # Get the filenames in each directory (train and test)
 
-    train_filenames, train_labels = get_images_paths(args.data_dir, "train.txt", 750, 5)
-    eval_filenames, eval_labels = get_images_paths(args.data_dir, "test.txt", 750, 5)
+    train_filenames, train_labels = get_images_data(args.data_dir, "train.txt", 750, 5)
+    eval_filenames, eval_labels = get_images_data(args.data_dir, "test.txt", 750, 5)
 
     '''
     filenames = os.listdir(train_data_dir)

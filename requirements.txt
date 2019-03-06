@@ -1,5 +1,6 @@
 numpy
 Pillow
-tensorflow>=1.5
+tensorflow-gpu==1.12.0
 tabulate
 tqdm
+tflearn
