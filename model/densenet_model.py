@@ -1,9 +1,8 @@
 from __future__ import print_function
 import tensorflow as tf
-import os
-from tflearn.layers.conv import global_avg_pool
-from tensorflow.contrib.layers import batch_norm, flatten
-from tensorflow.contrib.framework import arg_scope
+
+# from tflearn.layers.conv import global_avg_pool
+
 
 
 def conv_layer(input, filter, kernel, stride=1, layer_name="conv"):
@@ -114,7 +113,7 @@ class DenseNet():
             out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
             out = tf.nn.relu(out)
 
-            out = Global_Average_Pooling(out)
+            # out = Global_Average_Pooling(out)
 
             # out = tf.reshape(out, [-1, 1 * 1 * self.num_filters])
             with tf.variable_scope('fc_1'):
