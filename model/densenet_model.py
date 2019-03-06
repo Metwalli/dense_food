@@ -113,7 +113,7 @@ class DenseNet():
             out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
             out = tf.nn.relu(out)
 
-            # out = Global_Average_Pooling(out)
+            out = Average_pooling(out, pool_size=[2,2], stride=2)
 
             # out = tf.reshape(out, [-1, 1 * 1 * self.num_filters])
             with tf.variable_scope('fc_1'):
