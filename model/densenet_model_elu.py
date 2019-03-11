@@ -88,19 +88,19 @@ class DenseNetELU():
             out = Max_Pooling(out, pool_size=[3,3], stride=2)
             # define list contain the number layers in blocks the length of list based on the number blocks in the model
 
-            out = self.dense_block(input_x=out, nb_layers=1, layer_name='dense_1')
+            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_1')
             out = self.transition_layer(out, scope='trans_1')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=1, layer_name='dense_2')
+            out = self.dense_block(input_x=out, nb_layers=4, layer_name='dense_2')
             out = self.transition_layer(out, scope='trans_2')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_3')
+            out = self.dense_block(input_x=out, nb_layers=4, layer_name='dense_3')
             out = self.transition_layer(out, scope='trans_3')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=1, layer_name='dense_4')
+            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_4')
             out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
             out = tf.nn.elu(out)
             out = Global_Average_Pooling(out)

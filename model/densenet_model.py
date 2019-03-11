@@ -69,7 +69,7 @@ class DenseNet():
     def dense_block(self, input_x, nb_layers, layer_name):
         with tf.name_scope(layer_name):
             concat_feat = input_x
-            for i in range(nb_layers-1):
+            for i in range(nb_layers):
                 x = self.bottleneck_layer(concat_feat, no_filters=self.params.growth_rate, scope=layer_name + '_bottleN_' + str(i + 1))
                 concat_feat = tf.concat([concat_feat, x], axis=3)
                 self.num_filters += self.params.growth_rate
