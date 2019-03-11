@@ -97,7 +97,7 @@ if __name__ == '__main__':
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
     # Create Meta data files
-    create_meta_data(args.data_dir, args.output_dir, 10)
+    create_meta_data(args.data_dir, args.output_dir)
 
     # Creat tow floder for train and test
     if not(os.path.exists(os.path.join(args.output_dir, "train"))):
@@ -112,8 +112,8 @@ if __name__ == '__main__':
 
     # Get the filenames in each directory (train and test)
 
-    train_filenames, train_labels = get_images_data(args.data_dir, "meta/train.txt")
-    eval_filenames, eval_labels = get_images_data(args.data_dir, "meta/test.txt")
+    train_filenames, train_labels = get_images_data(args.data_dir, "train")
+    eval_filenames, eval_labels = get_images_data(args.data_dir, "test")
 
     # Preprocess train, dev and test
     idx = 0

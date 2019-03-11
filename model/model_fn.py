@@ -3,6 +3,7 @@
 import tensorflow as tf
 
 from model.densenet_model import DenseNet
+from .densenet_model_elu import DenseNetELU
 
 def build_model(is_training, inputs, params):
     """Compute logits of the model (output distribution)
@@ -69,8 +70,8 @@ def model_fn(mode, inputs, params, reuse=False):
     # MODEL: define the layers of the model
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
-        # logits = build_model(is_training, inputs, params)
-        logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
+        logits = build_model(is_training, inputs, params)
+        # logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         predictions = tf.argmax(logits, 1)
 
     # Define loss and accuracy
@@ -79,8 +80,12 @@ def model_fn(mode, inputs, params, reuse=False):
 
     # Define training step that minimizes the loss with the Adam optimizer
     if is_training:
-        optimizer = tf.train.AdamOptimizer(params.learning_rate)
         global_step = tf.train.get_or_create_global_step()
+        starter_learning_rate = params.learning_rate
+        learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
+                                                   100000, 0.96, staircase=True)
+        optimizer = tf.train.AdamOptimizer(learning_rate)
+
         if params.use_batch_norm:
             # Add a dependency to update the moving mean and variance for batch normalization
             with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):

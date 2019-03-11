@@ -26,51 +26,45 @@ from tqdm import tqdm
 import numpy as np
 
 
-SIZE = 300
+SIZE = 299
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/food-101', help="Directory with the SIGNS dataset")
 parser.add_argument('--output_dir', default='data/food-10-300x300', help="Where to write the new data")
 
 
-def class_to_index_mapping(data_dir, num_classes):
+def class_to_index_mapping(data_dir):
     class_to_ix = {}
     ix_to_class = {}
     classes =[]
     with open(os.path.join(data_dir, "meta/classes.txt")) as txt:
-        i = 0
-        txt = txt.read().splitlines()
-        for l in txt:
-            classes.append(l)
-            i +=1
-            if i == num_classes:
-                break
-        # classes = [l.strip() for l in txt.readlines()]
+        classes = [l.strip() for l in txt.readlines()]
+        print(len(classes))
         class_to_ix = dict(zip(classes, range(len(classes))))
         ix_to_class = dict(zip(range(len(classes)), classes))
         class_to_ix = {v: k for k, v in ix_to_class.items()}
     # sorted_class_to_ix = collections.OrderedDict(sorted(class_to_ix.items()))
         return class_to_ix, ix_to_class
 
-def get_images_data(data_dir, file_name, num_classes):
+def get_images_data(data_dir, opt):
     imagesPaths = []
     labels = []
-    class_to_ix, ix_to_class = class_to_index_mapping(data_dir, num_classes)
-    with open(os.path.join(data_dir, file_name)) as t:
+    class_to_ix, ix_to_class = class_to_index_mapping(data_dir)
+    with open(os.path.join(data_dir, "meta", opt + ".txt")) as t:
         train_data = t.read().splitlines()
         for d in train_data:
             class_name = d.split('/')[0]
             labels.append(class_to_ix[class_name])
-            imagesPaths.append(os.path.join(data_dir, "images", d + ".jpg"))
+            imagesPaths.append(os.path.join(data_dir, opt, d + ".jpg"))
     return imagesPaths, labels
 
-def create_meta_data(source_data_dir, dist_data_dir, num_classes):
-    class_to_ix, ix_to_class = class_to_index_mapping(source_data_dir, num_classes)
+def create_meta_data(source_data_dir, dist_data_dir, filenames):
+    class_to_ix, ix_to_class = class_to_index_mapping(source_data_dir)
     classes_file = open(os.path.join(dist_data_dir, "meta/classes.txt"), "w")
     if not os.path.exists(dist_data_dir):
         os.mkdir(dist_data_dir)
         os.mkdir(os.path.join(dist_data_dir, "meta"))
-    train_file = open(os.path.join(dist_data_dir, "meta/train.txt"), "w")
+    train_file = open(os.path.join(dist_data_dir, "train.txt"), "w")
     with open(os.path.join(source_data_dir, "meta/train.txt"))as t:
         train_pahts = t.read().splitlines()
         for i in range(len(ix_to_class)):
@@ -79,8 +73,8 @@ def create_meta_data(source_data_dir, dist_data_dir, num_classes):
                 class_name = p.split('/')[0]
                 if ix_to_class[i] == class_name:
                     train_file.write(p+"\n")
-    test_file = open(os.path.join(dist_data_dir, "meta/test.txt"), "w")
-    with open(os.path.join(source_data_dir, "meta/test.txt"))as t:
+    test_file = open(os.path.join(dist_data_dir, "dev.txt"), "w")
+    with open(os.path.join(source_data_dir, "meta/dev.txt"))as t:
         test_pahts = t.read().splitlines()
         for i in range(len(ix_to_class)):
             for p in test_pahts:
@@ -92,7 +86,7 @@ def resize_and_save(filename, output_dir, size=SIZE):
     """Resize the image contained in `filename` and save it to the `output_dir`"""
     image = Image.open(filename)
     # Use bilinear interpolation instead of the default "nearest neighbor" method
-    image = image.resize((size, size), Image.BILINEAR)
+    # image = image.resize((size, size), Image.BILINEAR)
     # print(os.path.join(output_dir, (filename.split('/')[-1]).split('\\')[-1]))
     image.save(os.path.join(output_dir, (filename.split('/')[-1]).split('\\')[-1]))
 
@@ -103,12 +97,12 @@ if __name__ == '__main__':
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
 
     # Create Meta data files
-    create_meta_data(args.data_dir, args.output_dir, 101)
+    # create_meta_data(args.data_dir, args.output_dir)
 
     # Creat tow floder for train and test
-    if not(os.path.exists(os.path.join(args.output_dir, "train"))):
-        os.mkdir(os.path.join(args.output_dir, "train"))
-        os.mkdir(os.path.join(args.output_dir, "test"))
+    # if not(os.path.exists(os.path.join(args.output_dir, "train"))):
+    #     os.mkdir(os.path.join(args.output_dir, "train"))
+    #     os.mkdir(os.path.join(args.output_dir, "dev"))
 
 
     # Define the data directories
@@ -116,37 +110,52 @@ if __name__ == '__main__':
     train_data_dir = os.path.join(args.data_dir, 'train')
     test_data_dir = os.path.join(args.data_dir, 'test')
 
-    # Get the filenames in each directory (train and test)
+    with open(os.path.join(args.data_dir, "meta/train.txt")) as t:
+        filenames = t.read().splitlines()
+        filenames.sort()
+        random.shuffle(filenames)
+        split = int(0.8 * len(filenames))
+        train_filenames = filenames[:split]
+        train_filenames.sort()
+        dev_filenames = filenames[split:]
+        dev_filenames.sort()
 
-    train_filenames, train_labels = get_images_data(args.data_dir, "meta/train.txt", 101)
-    eval_filenames, eval_labels = get_images_data(args.data_dir, "meta/test.txt", 101)
+        train_file = open(os.path.join(args.data_dir, "train.txt"), "w")
+        dev_file = open(os.path.join(args.data_dir, "dev.txt"), "w")
+        for d in train_filenames:
+            train_file.write(d + "\n")
+        for d in dev_filenames:
+            dev_file.write(d + "\n")
 
-    # Preprocess train, dev and test
-    idx = 0
-    train_dir = os.path.join(args.output_dir, "train")
-    test_dir = os.path.join(args.output_dir, "test")
-    with open(os.path.join(args.output_dir, "meta/classes.txt")) as classes_list:
-        classes_list = classes_list.read().splitlines()
-        for c in classes_list:
-            output_train_dir_split = os.path.join(train_dir, c)
-            if not os.path.exists(output_train_dir_split):
-                os.mkdir(output_train_dir_split)
-            else:
-                print("Warning: dir {} already exists".format(output_train_dir_split))
-            print("Processing {} data, saving preprocessed data to")
-            for filename in tqdm(train_filenames):
-                class_name = filename.split('\\')[8].split('/')[0]
-                if class_name == c:
-                    resize_and_save(filename, output_train_dir_split, size=SIZE)
+        train_dir = os.path.join(args.output_dir, "train")
+        dev_dir = os.path.join(args.output_dir, "dev")
+        os.mkdir(train_dir)
+        os.mkdir(dev_dir)
+        with open(os.path.join(args.data_dir, "meta/classes.txt")) as classes_list:
+            classes_list = classes_list.read().splitlines()
+            for c in classes_list:
+                output_train_dir_split = os.path.join(train_dir, c)
+                if not os.path.exists(output_train_dir_split):
+                    os.mkdir(output_train_dir_split)
+                else:
+                    print("Warning: dir {} already exists".format(output_train_dir_split))
+                print("Processing {} data, saving preprocessed data to")
+                for filename in tqdm(train_filenames):
+                    class_name = filename.split('/')[0]
+                    if class_name == c:
+                        f = os.path.join(args.data_dir, "1train", filename + ".jpg")
+                        resize_and_save(f, output_train_dir_split, size=SIZE)
+                output_dev_dir_split = os.path.join(dev_dir, c)
+                if not os.path.exists(output_dev_dir_split):
+                    os.mkdir(output_dev_dir_split)
+                else:
+                    print("Warning: dir {} already exists".format(output_dev_dir_split))
+                print("Processing {} data, saving preprocessed data to")
+                for filename in tqdm(dev_filenames):
+                    class_name = filename.split('/')[0]
+                    if class_name == c:
+                        f = os.path.join(args.data_dir, "1train", filename + ".jpg")
+                        resize_and_save(f, output_dev_dir_split, size=SIZE)
 
-            # Copy and resize test images
-            output_test_dir_split = os.path.join(test_dir, c)
-            if not os.path.exists(output_test_dir_split):
-                os.mkdir(output_test_dir_split)
-            else:
-                print("Warning: dir {} already exists".format(output_test_dir_split))
-            for filename in tqdm(eval_filenames):
-                if filename.split('\\')[8].split('/')[0] == c:
-                    resize_and_save(filename, output_test_dir_split, size=SIZE)
 
     print("Done building dataset")
