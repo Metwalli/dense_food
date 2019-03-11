@@ -114,7 +114,7 @@ class DenseNet():
             #x = self.dense_block(input_x=x, nb_layers=32, layer_name='dense_final')
             
             # 100 Layer
-
+            '''
             # out = tf.reshape(out, [-1, 1 * 1 * self.num_filters])
             with tf.variable_scope('fc_1'):
                 fc1 = tf.layers.dense(out, self.num_filters)
@@ -124,8 +124,9 @@ class DenseNet():
                 # if self.params.use_batch_norm:
                 #     out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
                 fc1 = tf.nn.relu(fc1)
-            with tf.variable_scope('fc_2'):
-                logits = tf.layers.dense(fc1, self.params.num_labels)
+            '''
+            with tf.variable_scope('fc_1'):
+                logits = tf.layers.dense(out, self.params.num_labels)
 
         return logits
 
