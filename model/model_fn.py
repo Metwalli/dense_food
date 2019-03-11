@@ -2,7 +2,7 @@
 
 import tensorflow as tf
 
-from model.densenet_model import DenseNet
+from .densenet_model import DenseNet
 from .densenet_model_elu import DenseNetELU
 
 def build_model(is_training, inputs, params):
@@ -70,7 +70,8 @@ def model_fn(mode, inputs, params, reuse=False):
     # MODEL: define the layers of the model
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
-        logits = build_model(is_training, inputs, params)
+        # logits = build_model(is_training, inputs, params)
+        logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         # logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         predictions = tf.argmax(logits, 1)
 

@@ -96,11 +96,11 @@ class DenseNetELU():
             out = self.transition_layer(out, scope='trans_2')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=4, layer_name='dense_3')
+            out = self.dense_block(input_x=out, nb_layers=8, layer_name='dense_3')
             out = self.transition_layer(out, scope='trans_3')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=2, layer_name='dense_4')
+            out = self.dense_block(input_x=out, nb_layers=6, layer_name='dense_4')
             out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
             out = tf.nn.elu(out)
             out = Global_Average_Pooling(out)

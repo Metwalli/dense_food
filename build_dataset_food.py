@@ -39,7 +39,6 @@ def class_to_index_mapping(data_dir):
     classes =[]
     with open(os.path.join(data_dir, "meta/classes.txt")) as txt:
         classes = [l.strip() for l in txt.readlines()]
-        print(len(classes))
         class_to_ix = dict(zip(classes, range(len(classes))))
         ix_to_class = dict(zip(range(len(classes)), classes))
         class_to_ix = {v: k for k, v in ix_to_class.items()}
