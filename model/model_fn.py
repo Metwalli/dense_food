@@ -82,9 +82,9 @@ def model_fn(mode, inputs, params, reuse=False):
     # Define training step that minimizes the loss with the Adam optimizer
     if is_training:
         global_step = tf.train.get_or_create_global_step()
-        starter_learning_rate = params.learning_rate
-        learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
-                                                   100000, 0.96, staircase=True)
+        learning_rate = params.learning_rate
+        # learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
+        #                                            100000, 0.96, staircase=True)
         optimizer = tf.train.AdamOptimizer(learning_rate)
 
         if params.use_batch_norm:
