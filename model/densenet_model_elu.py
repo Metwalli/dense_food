@@ -41,13 +41,13 @@ class DenseNetELU():
 
     def bottleneck_layer(self, x, no_filters, scope):
         with tf.name_scope(scope):
-            x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
+            # x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
             x = tf.nn.elu(x)
             num_channels = no_filters * 4
             x = conv_layer(x, filter=num_channels, kernel=[1,1], layer_name=scope+'_conv1')
             if self.params.dropout_rate > 0:
                 x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
-            x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
+            # x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
             x = tf.nn.elu(x)
             x = conv_layer(x, filter=no_filters, kernel=[3,3], layer_name=scope+'_conv2')
             if self.params.dropout_rate > 0:
@@ -57,7 +57,7 @@ class DenseNetELU():
 
     def transition_layer(self, x, scope):
         with tf.name_scope(scope):
-            x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
+            # x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
             x = tf.nn.elu(x)
             output_channels = int(self.num_filters * self.params.compression_rate)
             x = conv_layer(x, output_channels, kernel=[1,1], layer_name=scope+'_conv1')
@@ -96,12 +96,12 @@ class DenseNetELU():
             out = self.transition_layer(out, scope='trans_2')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=24, layer_name='dense_3')
+            out = self.dense_block(input_x=out, nb_layers=48, layer_name='dense_3')
             out = self.transition_layer(out, scope='trans_3')
             self.num_filters = int(self.num_filters * self.params.compression_rate)
 
-            out = self.dense_block(input_x=out, nb_layers=16, layer_name='dense_4')
-            out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
+            out = self.dense_block(input_x=out, nb_layers=32, layer_name='dense_4')
+            # out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
             out = tf.nn.elu(out)
             out = Global_Average_Pooling(out)
 
@@ -114,16 +114,20 @@ class DenseNetELU():
             #x = self.dense_block(input_x=x, nb_layers=32, layer_name='dense_final')
             
             # 100 Layer
-
+            '''
             # out = tf.reshape(out, [-1, 1 * 1 * self.num_filters])
             with tf.variable_scope('fc_1'):
-                fc1 = tf.layers.dense(out, self.num_filters)
+                fc1 = tf.flatten
+                # fc1 = tf.layers.dense(out, self.num_filters)
                 # Apply Dropout (if is_training is False, dropout is not applied)
                 if self.params.dropout_rate >0:
                     fc1 = tf.layers.dropout(fc1, rate=self.params.dropout_rate, training=self.is_training)
                 # if self.params.use_batch_norm:
                 #     out = tf.layers.batch_normalization(out, momentum=self.params.bn_momentum, training=self.is_training)
                 fc1 = tf.nn.elu(fc1)
+            '''
+            with tf.variable_scope('fc_1'):
+                fc1 = tf.layers.flatten(out)
             with tf.variable_scope('fc_2'):
                 logits = tf.layers.dense(fc1, self.params.num_labels)
 

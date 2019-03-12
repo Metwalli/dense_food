@@ -71,8 +71,8 @@ def model_fn(mode, inputs, params, reuse=False):
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
         # logits = build_model(is_training, inputs, params)
-        logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
-        # logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
+        # logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
+        logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         predictions = tf.argmax(logits, 1)
 
     # Define loss and accuracy
