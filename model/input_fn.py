@@ -33,7 +33,7 @@ def train_preprocess(image, label, use_random_flip):
     if use_random_flip:
         image = tf.image.random_flip_left_right(image)
 
-    image = tf.image.central_crop(image, 0.3)
+    # image = tf.image.central_crop(image, 0.3)
     # image = tf.image.random_crop(image, image.shape)
     image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
     image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
