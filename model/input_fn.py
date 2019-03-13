@@ -29,7 +29,7 @@ def train_preprocess(image, label, use_random_flip):
     Apply the following operations:
         - Horizontally flip the image with probability 1/2
         - Apply random brightness and saturation
-    """
+
     if use_random_flip:
         image = tf.image.random_flip_left_right(image)
 
@@ -40,7 +40,7 @@ def train_preprocess(image, label, use_random_flip):
 
     # Make sure the image is still in [0, 1]
     image = tf.clip_by_value(image, 0.0, 1.0)
-
+    """
     return image, label
 
 
