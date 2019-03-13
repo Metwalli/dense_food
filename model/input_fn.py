@@ -29,18 +29,18 @@ def train_preprocess(image, label, use_random_flip):
     Apply the following operations:
         - Horizontally flip the image with probability 1/2
         - Apply random brightness and saturation
-
+    """
     if use_random_flip:
         image = tf.image.random_flip_left_right(image)
 
     # image = tf.image.central_crop(image, 0.3)
     # image = tf.image.random_crop(image, image.shape)
-    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
-    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
+    # image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+    # image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
 
     # Make sure the image is still in [0, 1]
     image = tf.clip_by_value(image, 0.0, 1.0)
-    """
+
     return image, label
 
 
