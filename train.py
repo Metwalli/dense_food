@@ -7,7 +7,7 @@ import random
 
 import tensorflow as tf
 
-from build_dataset_food import get_images_data
+from build_dataset_food import get_images_data, get_train_images_data
 from model.input_fn import input_fn
 from model.utils import Params
 from model.utils import set_logger
@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     # Get the filenames from the train and dev sets
 
-    train_filenames, train_labels = get_images_data(data_dir, "train")
+    train_filenames, train_labels = get_train_images_data(data_dir, "train")
     eval_filenames, eval_labels = get_images_data(data_dir, "dev")
 
     # Specify the sizes of the dataset we train on and evaluate on

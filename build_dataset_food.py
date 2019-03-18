@@ -29,7 +29,7 @@ import numpy as np
 SIZE = 299
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/food-101', help="Directory with the SIGNS dataset")
+parser.add_argument('--data_dir', default='data/food_05_300x300', help="Directory with the SIGNS dataset")
 parser.add_argument('--output_dir', default='data/food-10-300x300', help="Where to write the new data")
 
 
@@ -44,6 +44,20 @@ def class_to_index_mapping(data_dir):
         class_to_ix = {v: k for k, v in ix_to_class.items()}
     # sorted_class_to_ix = collections.OrderedDict(sorted(class_to_ix.items()))
         return class_to_ix, ix_to_class
+
+def get_train_images_data(data_dir, opt):
+    imagesPaths = []
+    labels = []
+    class_to_ix, ix_to_class = class_to_index_mapping(data_dir)
+    classes_list = os.listdir(os.path.join(data_dir, opt))
+    for d in classes_list:
+        for f in os.listdir(os.path.join(data_dir, opt, d)):
+            if f.endswith('.jpg'):
+                labels.append(class_to_ix[d])
+                imagesPaths.append(os.path.join(data_dir, opt, d, f))
+    # Get the filenames in each directory (train and test)
+
+    return imagesPaths, labels
 
 def get_images_data(data_dir, opt):
     imagesPaths = []
@@ -94,7 +108,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
-
+    data_dir ="C:\data\\food_05_300x300"
+    images, labels = get_train_images_data(data_dir)
+"""
     # Create Meta data files
     create_meta_data(args.data_dir, args.output_dir)
 
@@ -144,3 +160,4 @@ if __name__ == '__main__':
                     resize_and_save(filename, output_test_dir_split, size=SIZE)
 
     print("Done building dataset")
+"""

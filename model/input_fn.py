@@ -30,10 +30,14 @@ def train_preprocess(image, label, use_random_flip):
         - Horizontally flip the image with probability 1/2
         - Apply random brightness and saturation
     """
-
+    # images = []
+    # labels= []
+    # images.append(image)
     if use_random_flip:
         image = tf.image.random_flip_left_right(image)
 
+    # images.append(tf.image.random_crop(image, image.shape))
+    # images.append(tf.image.rot90(image, 1))
     # image = tf.image.central_crop(image, 0.3)
 
 
@@ -41,17 +45,9 @@ def train_preprocess(image, label, use_random_flip):
     # image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
 
     # Make sure the image is still in [0, 1]
-    image = tf.clip_by_value(image, 0.0, 1.0)
-
-    return image, label
-
-def crop_image(image, label):
-    image = tf.image.random_crop(image, image.shape)
-    image = tf.clip_by_value(image, 0.0, 1.0)
-    return image, label
-def rotat_image(image, label):
-    image = tf.image.rot90(image, 1)
-    image = tf.clip_by_value(image, 0.0, 1.0)
+    # for i in range(len(images)):
+    #     images[i] = tf.clip_by_value(image[i], 0.0, 1.0)
+    #     labels.append(label)
     return image, label
 
 def input_fn(is_training, filenames, labels, params):
@@ -74,16 +70,12 @@ def input_fn(is_training, filenames, labels, params):
     # We don't repeat for multiple epochs because we always train and evaluate for one epoch
     parse_fn = lambda f, l: _parse_function(f, l, params.image_size)
     train_fn = lambda f, l: train_preprocess(f, l, params.use_random_flip)
-    train_fn1 = lambda f, l: rotat_image(f, l)
-    train_fn2 = lambda f, l: crop_image(f, l)
 
     if is_training:
         dataset = (tf.data.Dataset.from_tensor_slices((tf.constant(filenames), tf.constant(labels)))
             .shuffle(num_samples)  # whole dataset into the buffer ensures good shuffling
             .map(parse_fn, num_parallel_calls=params.num_parallel_calls)
             .map(train_fn, num_parallel_calls=params.num_parallel_calls)
-            .map(train_fn1, num_parallel_calls=params.num_parallel_calls)
-            .map(train_fn2, num_parallel_calls=params.num_parallel_calls)
             .batch(params.batch_size)
             .prefetch(1)  # make sure you always have one batch ready to serve
         )
