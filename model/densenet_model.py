@@ -126,7 +126,9 @@ class DenseNet():
                 fc1 = tf.nn.relu(fc1)
             '''
             with tf.variable_scope('fc_1'):
-                logits = tf.layers.dense(out, self.params.num_labels)
+                fc1 = tf.layers.flatten(out)
+            with tf.variable_scope('fc_2'):
+                logits = tf.layers.dense(fc1, self.params.num_labels)
 
         return logits
 
