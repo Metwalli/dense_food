@@ -29,7 +29,7 @@ import numpy as np
 SIZE = 299
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/food_05_300x300', help="Directory with the SIGNS dataset")
+parser.add_argument('--data_dir', default='C:\data\\food_05_300x300', help="Directory with the SIGNS dataset")
 parser.add_argument('--output_dir', default='data/food-10-300x300', help="Where to write the new data")
 
 
@@ -109,7 +109,8 @@ if __name__ == '__main__':
 
     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
     data_dir ="C:\data\\food_05_300x300"
-    images, labels = get_train_images_data(data_dir)
+    images, labels = get_train_images_data(data_dir, "train")
+    print(len(images), len(labels))
 """
     # Create Meta data files
     create_meta_data(args.data_dir, args.output_dir)

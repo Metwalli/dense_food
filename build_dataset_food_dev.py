@@ -20,6 +20,7 @@ representative as possible, we'll take 20% of "train_signs" as dev set.
 import argparse
 import random
 import os
+import shutil
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
@@ -29,7 +30,7 @@ import numpy as np
 SIZE = 299
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--data_dir', default='data/food-101', help="Directory with the SIGNS dataset")
+parser.add_argument('--data_dir', default='D:\Metwalli\master\\reasearches proposals\Computer vision\Materials\\food41', help="Directory with the SIGNS dataset")
 parser.add_argument('--output_dir', default='data/food-10-300x300', help="Where to write the new data")
 
 
@@ -81,59 +82,62 @@ def create_meta_data(source_data_dir, dist_data_dir, filenames):
                 if ix_to_class[i] == class_name:
                     test_file.write(p+"\n")
 
-def resize_and_save(filename, output_dir, size=SIZE):
+def resize_and_save(full_path, filename, output_dir, size=SIZE):
     """Resize the image contained in `filename` and save it to the `output_dir`"""
-    image = Image.open(filename)
+    image = Image.open(full_path)
     # Use bilinear interpolation instead of the default "nearest neighbor" method
     # image = image.resize((size, size), Image.BILINEAR)
     # print(os.path.join(output_dir, (filename.split('/')[-1]).split('\\')[-1]))
-    image.save(os.path.join(output_dir, (filename.split('/')[-1]).split('\\')[-1]))
+    image.save(os.path.join(output_dir, filename, ".jpg"))
+
+def split_images(class_name, opt):
+    # Creat Dir for Class in specified opt {train, dev or test}
+    if not os.path.exists(os.path.join(args.output_dir, opt, class_name)):
+        os.mkdir(os.path.join(args.output_dir, opt, class_name))
+    with open(os.path.join(args.output_dir, "meta", opt, ".txt")) as t:
+        filenames = t.read().splitlines()
+        print("Processing {} data, saving preprocessed data to")
+        for filename in tqdm(filenames):
+            if filename.split('/')[0] == class_name:
+                full_path = os.path.join(args.data_dir, "images", filename + ".jpg")
+                resize_and_save(full_path, filename, os.path.join(args.output_dir, opt), SIZE)
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+
+    assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
+    if not (os.path.exists(os.path.join(args.output_dir, "train"))):
+        os.mkdir(os.path.join(args.output_dir, "train"))
+        os.mkdir(os.path.join(args.output_dir, "dev"))
+        os.mkdir(os.path.join(args.output_dir, "test"))
+        os.mkdir(os.path.join(args.output_dir, "meta"))
+    # Split Train Data to train and dev and copy to output dir
+    with open(os.path.join(args.data_dir, "meta/train.txt")) as train_list:
+        split = int(0.8 * len(train_list))
+        train_filenames = train_list[:split]
+        dev_filenames = train_list[split:]
+        train_file = open(os.path.join(args.output_dir, "meta/train.txt"), "w")
+        train_file.write(train_filenames)
+        dev_file = open(os.path.join(args.output_dir, "meta/dev.txt"), "w")
+        dev_file.write(dev_filenames)
+    # copy classes and test to output dir
+    shutil.copy(os.path.join(args.data_dir, "meta/test.txt"), os.path.join(args.output_dir, "meta"))
+    shutil.copy(os.path.join(args.data_dir, "meta/classes.txt"), os.path.join(args.output_dir, "meta"))
 
 
-def augment_and_save(filename, output_dir):
-    """Resize the image contained in `filename` and save it to the `output_dir`"""
-    image = Image.open(filename)
-    flip_image = np.fliplr(image)
-    flip_image.save(os.path.join(output_dir, "flip_" + (filename.split('/')[-1]).split('\\')[-1]))
+    # Define the data directories
+    image_data_dir = os.path.join(args.data_dir, 'images')
+    train_data_dir = os.path.join(args.data_dir, 'train')
+    test_data_dir = os.path.join(args.data_dir, 'test')
 
-    # image = np.flipper(image, image.shape)
-    # image.save(os.path.join(output_dir, "crop_" + (filename.split('/')[-1]).split('\\')[-1]))
-    # # images.append(tf.image.rot90(image, 1))
+    # Apply Data Augmentation
 
 
+    with open(os.path.join(args.data_dir, "meta/classes.txt")) as classes_list:
+        classes_list = classes_list.read().splitlines()
+        for c in classes_list:
+            split_images(c, "train")
+            split_images(c, "dev")
+            split_images(c, "test")
 
-# if __name__ == '__main__':
-#     args = parser.parse_args()
-#
-#     assert os.path.isdir(args.data_dir), "Couldn't find the dataset at {}".format(args.data_dir)
-#
-#     # Create Meta data files
-#     # create_meta_data(args.data_dir, args.output_dir)
-#
-#     # Creat tow floder for train and test
-#     # if not(os.path.exists(os.path.join(args.output_dir, "train"))):
-#     #     os.mkdir(os.path.join(args.output_dir, "train"))
-#     #     os.mkdir(os.path.join(args.output_dir, "dev"))
-#
-#
-#     # Define the data directories
-#     all_data_dir = os.path.join(args.data_dir, 'images')
-#     train_data_dir = os.path.join(args.data_dir, 'train')
-#     test_data_dir = os.path.join(args.data_dir, 'test')
-#
-#     with open(os.path.join(args.data_dir, "meta/train.txt")) as t:
-#         train_filenames = t.read().splitlines()
-#
-#         train_dir = os.path.join(args.output_dir, "train")
-#         with open(os.path.join(args.data_dir, "meta/classes.txt")) as classes_list:
-#             classes_list = classes_list.read().splitlines()
-#             for c in classes_list:
-#                 print("Processing {} data, saving preprocessed data to")
-#                 for filename in tqdm(train_filenames):
-#                     class_name = filename.split('/')[0]
-#                     if class_name == c:
-#                         f = os.path.join(args.data_dir, "train", filename + ".jpg")
-#                         augment_and_save(f, os.path.join(args.data_dir, "train"))
-#
-#
-#     print("Done building dataset")
+    print("Done building dataset")
