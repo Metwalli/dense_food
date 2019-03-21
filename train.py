@@ -52,8 +52,8 @@ if __name__ == '__main__':
     # Get the filenames from the train and dev sets
 
     train_filenames, train_labels = get_train_images_data(data_dir, "train")
-    eval_filenames, eval_labels = get_images_data(data_dir, "dev")
-
+    # eval_filenames, eval_labels = get_images_data(data_dir, "dev")
+    eval_filenames, eval_labels = get_train_images_data(data_dir, "test")
     # Specify the sizes of the dataset we train on and evaluate on
     params.train_size = len(train_filenames)
     params.eval_size = len(eval_filenames)
