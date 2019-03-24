@@ -4,11 +4,12 @@ import argparse
 import logging
 import os
 import random
-
+from imutils import paths
 import tensorflow as tf
-
-from build_dataset_food import get_images_data, get_train_images_data
-from model.input_fn import input_fn
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.model_selection import train_test_split
+# from build_dataset_food import get_images_data, get_train_images_data
+from model.input_fn import input_fn, get_labels
 from model.utils import Params
 from model.utils import set_logger
 from model.utils import save_dict_to_json
@@ -18,9 +19,9 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--device_name', default='cpu')
-parser.add_argument('--model_dir', default='experiments/test',
+parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Experiment directory containing params.json")
-parser.add_argument('--data_dir', default='data/64x64_SIGNS',
+parser.add_argument('--data_dir', default='c:\data\\food_05_300x300\\all-train',
                     help="Directory containing the dataset")
 parser.add_argument('--restore_from', default=None,
                     help="Optional, directory or file containing weights to reload before training")
@@ -50,10 +51,27 @@ if __name__ == '__main__':
     data_dir = args.data_dir
 
     # Get the filenames from the train and dev sets
+    image_paths = sorted(list(paths.list_images(data_dir)))
+    random.seed(42)
+    random.shuffle(image_paths)
 
-    train_filenames, train_labels = get_train_images_data(data_dir, "train")
+    # binarize the labels
+    # lb = LabelBinarizer()
+    # labels = lb.fit_transform(labels)
+
+    # partition the data into training and testing splits using 80% of
+    # the data for training and the remaining 20% for testing
+    split = int(0.8 * len(image_paths))
+    train_filenames = image_paths[:split]
+    eval_filenames = image_paths[split:]
+    # (train_filenames, eval_filenames, train_labels, eval_labels) = train_test_split(image_paths,
+    #                                                 labels, test_size=0.2, random_state=42)
+    print(len(train_filenames), len(eval_filenames))
+    classes_list = os.listdir(data_dir)
+    train_labels = get_labels(train_filenames, classes_list)
+    eval_labels = get_labels(eval_filenames, classes_list)
     # eval_filenames, eval_labels = get_images_data(data_dir, "dev")
-    eval_filenames, eval_labels = get_train_images_data(data_dir, "test")
+    # eval_filenames, eval_labels = get_train_images_data(data_dir, "test")
     # Specify the sizes of the dataset we train on and evaluate on
     params.train_size = len(train_filenames)
     params.eval_size = len(eval_filenames)
@@ -69,4 +87,3 @@ if __name__ == '__main__':
     # Train the model
     logging.info("Starting training for {} epoch(s)".format(params.num_epochs))
     train_and_evaluate(train_model_spec, eval_model_spec, args.model_dir, params, args.restore_from)
-

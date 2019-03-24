@@ -2,6 +2,8 @@
 
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 import os
+import random
+from imutils import paths
 from tqdm import tqdm
 from build_dataset_food_dev import get_images_data
 datagen = ImageDataGenerator(
@@ -26,20 +28,14 @@ def img_augmentation(img, output_dir, filename):
         # if num_image_generated == 2:
         #     break # stop the loop after num_image_generated iterations
 
-data_dir = "C:\data\\food_05_300x300"
-train_filenames, labels = get_images_data(data_dir, "train")
+data_dir = "C:\data\\food_10_300x300\\train"
 
-with open(os.path.join(data_dir, "meta/classes.txt")) as classes_list:
-    classes_list = classes_list.read().splitlines()
-    for c in classes_list:
-        output_train_dir_split = os.path.join(data_dir, "train", c)
-        print("Processing {} data, saving preprocessed data to")
-        for filename in tqdm(train_filenames):
-            class_name = filename.split('\\')[4].split('/')[0]
-            prefix = filename.split('\\')[4].split('/')[1].split('.')[0]
-            # print(class_name)
-            if class_name == c:
-                img = load_img(filename)
-                img_augmentation(img, output_train_dir_split, prefix)
-
-        # Copy and resize test images
+imagePaths = sorted(list(paths.list_images(data_dir)))
+labels = []
+print("Processing {} data, saving preprocessed data to")
+for filename in tqdm(imagePaths):
+    class_name = filename.split(os.path.sep)[-2]
+    prefix = filename.split(os.path.sep)[-1].split('.')[0]
+    # print(class_name)
+    img = load_img(filename)
+    img_augmentation(img, os.path.join(data_dir, class_name), prefix)

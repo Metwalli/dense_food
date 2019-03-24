@@ -1,7 +1,18 @@
 """Create the input data pipeline using `tf.data`"""
 
 import tensorflow as tf
+import tensorflow
+import os
 
+def get_labels(imagePaths, classes):
+    labels = []
+    class_to_ix = dict(zip(classes, range(len(classes))))
+    ix_to_class = dict(zip(range(len(classes)), classes))
+    class_to_ix = {v: k for k, v in ix_to_class.items()}
+    for p in imagePaths:
+        labels.append(class_to_ix[p.split(os.path.sep)[-2]])
+
+    return labels
 
 def _parse_function(filename, label, size):
     """Obtain the image from the filename (for both training and validation).
