@@ -5,7 +5,7 @@ import os
 
 from tqdm import trange
 import tensorflow as tf
-
+import time
 from model.utils import save_dict_to_json
 from model.evaluation import evaluate_sess
 
@@ -88,6 +88,7 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
 
         best_eval_acc = 0.0
         for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
+            start_time = time.time()
             # Run one epoch
             logging.info("Epoch {}/{}".format(epoch + 1, begin_at_epoch + params.num_epochs))
             # Compute number of batches in one epoch (one full pass over the training set)
@@ -122,3 +123,5 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             # Save latest eval metrics in a json file in the model directory
             last_json_path = os.path.join(model_dir, "metrics_eval_last_weights.json")
             save_dict_to_json(metrics, last_json_path)
+            end_time = time.time()
+            print("Time Usage for the Epoch:" + str(int(end_time - start_time)/60) + "minutes")
