@@ -124,4 +124,4 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
             last_json_path = os.path.join(model_dir, "metrics_eval_last_weights.json")
             save_dict_to_json(metrics, last_json_path)
             end_time = time.time()
-            print("Time Usage for the Epoch:" + str(int(end_time - start_time)/60) + "minutes")
+            print("Time Usage for the Epoch:" + str(int(end_time - start_time)//60) + "minutes")
