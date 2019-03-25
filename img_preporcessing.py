@@ -28,7 +28,7 @@ def img_augmentation(img, output_dir, filename):
         # if num_image_generated == 2:
         #     break # stop the loop after num_image_generated iterations
 
-data_dir = "C:\data\\food_10_300x300\\train"
+data_dir = "home/ai309/metwalli/data/VIREO/food-10"
 
 imagePaths = sorted(list(paths.list_images(data_dir)))
 labels = []
