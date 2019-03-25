@@ -52,12 +52,12 @@ class DenseNet():
 
     def bottleneck_layer(self, x, no_filters, scope):
         with tf.name_scope(scope):
-            x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
-            x = tf.nn.relu(x)
-            num_channels = no_filters * 4
-            x = conv_layer(x, filter=num_channels, kernel=[1, 1], layer_name=scope + '_conv1')
-            if self.params.dropout_rate > 0:
-                x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
+            # x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
+            # x = tf.nn.relu(x)
+            # num_channels = no_filters * 4
+            # x = conv_layer(x, filter=num_channels, kernel=[1, 1], layer_name=scope + '_conv1')
+            # if self.params.dropout_rate > 0:
+            #     x = tf.layers.dropout(x, rate=self.params.dropout_rate, training=self.is_training)
             x = tf.layers.batch_normalization(x, momentum=self.params.bn_momentum, training=self.is_training)
             x = tf.nn.relu(x)
             x = conv_layer(x, filter=no_filters, kernel=[3, 3], layer_name=scope + '_conv2')
