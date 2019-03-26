@@ -90,6 +90,8 @@ def train_and_evaluate(train_model_spec, eval_model_spec, model_dir, params, res
         for epoch in range(begin_at_epoch, begin_at_epoch + params.num_epochs):
             start_time = time.time()
             # Run one epoch
+            if epoch % 20 == 0:
+                params.learning_rate = params.learning_rate/10
             logging.info("Epoch {}/{}".format(epoch + 1, begin_at_epoch + params.num_epochs))
             # Compute number of batches in one epoch (one full pass over the training set)
             num_steps = (params.train_size + params.batch_size - 1) // params.batch_size
