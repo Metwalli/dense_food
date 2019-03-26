@@ -27,7 +27,7 @@ parser.add_argument('--data_dir', default='c:\data\\food_05_300x300\\all-train',
 parser.add_argument('--restore_from', default=None,
                     help="Optional, directory or file containing weights to reload before training")
 
-
+# /home/ai309/metwalli/project-test-1/dense_food/experiments/vireo10_aug4
 if __name__ == '__main__':
     # Set the random seed for the whole graph for reproductible experiments
     tf.set_random_seed(230)
