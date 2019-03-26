@@ -48,17 +48,11 @@ def train_preprocess(image, label, use_random_flip):
         image = tf.image.random_flip_left_right(image)
 
     # images.append(tf.image.random_crop(image, image.shape))
-    # images.append(tf.image.rot90(image, 1))
-    # image = tf.image.central_crop(image, 0.3)
+    image = tf.image.flip_up_down(image)
 
+    image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
+    image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
 
-    # image = tf.image.random_brightness(image, max_delta=32.0 / 255.0)
-    # image = tf.image.random_saturation(image, lower=0.5, upper=1.5)
-
-    # Make sure the image is still in [0, 1]
-    # for i in range(len(images)):
-    #     images[i] = tf.clip_by_value(image[i], 0.0, 1.0)
-    #     labels.append(label)
     return image, label
 
 def input_fn(is_training, filenames, labels, params):

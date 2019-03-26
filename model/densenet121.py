@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from keras.optimizers import SGD
+import tensorflow as tf
 from keras.layers import Input, merge, ZeroPadding2D
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.convolutional import Convolution2D
@@ -14,6 +15,11 @@ from sklearn.metrics import log_loss
 from custom_layers.scale_layer import Scale
 
 # from load_cifar10 import load_cifar10_data
+
+def conv_layer(input, filter, kernel, stride=1, layer_name="conv"):
+    with tf.name_scope(layer_name):
+        conv = tf.layers.conv2d(inputs=input, filters=filter, kernel_size=kernel, strides=stride, padding='SAME')
+        return conv
 
 def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth_rate=32, nb_filter=64, reduction=0.5, dropout_rate=0.0, weight_decay=1e-4, num_classes=None):
     '''
@@ -57,13 +63,11 @@ def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth
     nb_layers = [6,12,24,16] # For DenseNet-121
 
     # Initial convolution
-    x = ZeroPadding2D((3, 3), name='conv1_zeropadding')(img_input)
-    x = Convolution2D(nb_filter, 7, 7, subsample=(2, 2), name='conv1', bias=False)(x)
+    x = tf.layers.conv2d(inputs=img_input, filters=nb_filter, kernel_size=[7, 7], strides=2, padding='SAME')
     x = BatchNormalization(epsilon=eps, axis=concat_axis, name='conv1_bn')(x)
     x = Scale(axis=concat_axis, name='conv1_scale')(x)
     x = Activation('relu', name='relu1')(x)
-    x = ZeroPadding2D((1, 1), name='pool1_zeropadding')(x)
-    x = MaxPooling2D((3, 3), strides=(2, 2), name='pool1')(x)
+    x = tf.layers.max_pooling2d(inputs=x, pool_size=[3, 3], strides=2, padding='SAME')
 
     # Add dense blocks
     for block_idx in range(nb_dense_block - 1):
@@ -80,6 +84,7 @@ def densenet121_model(img_rows, img_cols, color_type=1, nb_dense_block=4, growth
     x = BatchNormalization(epsilon=eps, axis=concat_axis, name='conv'+str(final_stage)+'_blk_bn')(x)
     x = Scale(axis=concat_axis, name='conv'+str(final_stage)+'_blk_scale')(x)
     x = Activation('relu', name='relu'+str(final_stage)+'_blk')(x)
+
 
     x_fc = GlobalAveragePooling2D(name='pool'+str(final_stage))(x)
     x_fc = Dense(1000, name='fc6')(x_fc)
@@ -131,7 +136,7 @@ def conv_block(x, stage, branch, nb_filter, dropout_rate=None, weight_decay=1e-4
     x = BatchNormalization(epsilon=eps, axis=concat_axis, name=conv_name_base+'_x1_bn')(x)
     x = Scale(axis=concat_axis, name=conv_name_base+'_x1_scale')(x)
     x = Activation('relu', name=relu_name_base+'_x1')(x)
-    x = Convolution2D(inter_channel, 1, 1, name=conv_name_base+'_x1', bias=False)(x)
+    x = tf.layers.conv2d(inputs=x, filters=inter_channel, kernel_size=[1, 1], strides=1, padding='SAME')
 
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
@@ -140,8 +145,7 @@ def conv_block(x, stage, branch, nb_filter, dropout_rate=None, weight_decay=1e-4
     x = BatchNormalization(epsilon=eps, axis=concat_axis, name=conv_name_base+'_x2_bn')(x)
     x = Scale(axis=concat_axis, name=conv_name_base+'_x2_scale')(x)
     x = Activation('relu', name=relu_name_base+'_x2')(x)
-    x = ZeroPadding2D((1, 1), name=conv_name_base+'_x2_zeropadding')(x)
-    x = Convolution2D(nb_filter, 3, 3, name=conv_name_base+'_x2', bias=False)(x)
+    x = tf.layers.conv2d(inputs=x, filters=nb_filter, kernel_size=[3, 3], strides=1, padding='SAME')
 
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
@@ -168,12 +172,11 @@ def transition_block(x, stage, nb_filter, compression=1.0, dropout_rate=None, we
     x = BatchNormalization(epsilon=eps, axis=concat_axis, name=conv_name_base+'_bn')(x)
     x = Scale(axis=concat_axis, name=conv_name_base+'_scale')(x)
     x = Activation('relu', name=relu_name_base)(x)
-    x = Convolution2D(int(nb_filter * compression), 1, 1, name=conv_name_base, bias=False)(x)
+    x = tf.layers.conv2d(inputs=x, filters=int(nb_filter * compression), kernel_size=[1, 1], name=conv_name_base, strides=1, padding='SAME')
 
     if dropout_rate:
         x = Dropout(dropout_rate)(x)
-
-    x = AveragePooling2D((2, 2), strides=(2, 2), name=pool_name_base)(x)
+    x = tf.layers.average_pooling2d(inputs=x, pool_size=[2, 2], strides=2, name=pool_name_base, padding='SAME')
 
     return x
 
