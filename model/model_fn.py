@@ -4,6 +4,7 @@ import tensorflow as tf
 
 from .densenet_model import DenseNet
 from .densenet_model_elu import DenseNetELU
+from .densenet121 import densenet121_model
 
 def build_model(is_training, inputs, params):
     """Compute logits of the model (output distribution)
@@ -71,7 +72,8 @@ def model_fn(mode, inputs, params, reuse=False):
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
         # logits = build_model(is_training, inputs, params)
-        logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
+        logits = densenet121_model(img_rows=224, img_cols=224, color_type=3, num_classes=10)
+        # logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         # logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         predictions = tf.argmax(logits, 1)
 
