@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     # Get the filenames from the train and dev sets
     image_paths = sorted(list(paths.list_images(data_dir)))
-    random.seed(42)
+    random.seed(230)
     random.shuffle(image_paths)
 
     # binarize the labels
@@ -65,14 +65,11 @@ if __name__ == '__main__':
     split = int(0.8 * len(image_paths))
     train_filenames = image_paths[:split]
     eval_filenames = image_paths[split:]
-    # (train_filenames, eval_filenames, train_labels, eval_labels) = train_test_split(image_paths,
-    #                                                 labels, test_size=0.2, random_state=42)
-    print(len(train_filenames), len(eval_filenames))
+
     classes_list = os.listdir(data_dir)
     train_labels = get_labels(train_filenames, classes_list)
     eval_labels = get_labels(eval_filenames, classes_list)
-    # eval_filenames, eval_labels = get_images_data(data_dir, "dev")
-    # eval_filenames, eval_labels = get_train_images_data(data_dir, "test")
+
     # Specify the sizes of the dataset we train on and evaluate on
     params.train_size = len(train_filenames)
     params.eval_size = len(eval_filenames)
@@ -80,6 +77,7 @@ if __name__ == '__main__':
     # Create the two iterators over the two datasets
     train_inputs = input_fn(True, train_filenames, train_labels, params)
     eval_inputs = input_fn(False, eval_filenames, eval_labels, params)
+
     # Define the model
     logging.info("Creating the model...")
     train_model_spec = model_fn('train', train_inputs, params)

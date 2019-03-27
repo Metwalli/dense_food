@@ -1,10 +1,51 @@
 """Define the model."""
 
 import tensorflow as tf
-
+from keras.optimizers import Adam
 from .densenet_model import DenseNet
 from .densenet_model_elu import DenseNetELU
 from .densenet121 import densenet121_model
+
+def build_vggnet_model(is_training, inputs):
+
+
+    out = inputs['images']
+
+    # CONV => RELU => POOL
+    out = tf.layers.conv2d(out, 32, 3, padding='same')
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    out = tf.layers.max_pooling2d(out, 3, 3)
+    out = tf.layers.dropout(out, 0.25)
+
+    # (CONV => RELU) * 2 => POOL
+    out = tf.layers.conv2d(out, 64, 3, padding='same')
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    out = tf.layers.conv2d(out, 64, 3, padding='same')
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    out = tf.layers.max_pooling2d(out, 2, 2)
+    out = tf.layers.dropout(out, 0.25)
+
+    # (CONV => RELU) * 2 => POOL
+    out = tf.layers.conv2d(out, 128, 3, padding='same')
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    out = tf.layers.conv2d(out, 128, 3, padding='same')
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    out = tf.layers.max_pooling2d(out, 2, 2)
+    out = tf.layers.dropout(out, 0.25)
+
+    # first (and only) set of FC => RELU layers
+    out = tf.layers.flatten(out)
+    out = tf.layers.dense(out, 1024)
+    out = tf.nn.relu(out)
+    out = tf.layers.batch_normalization(out, momentum=0.9, training=is_training)
+    logits = tf.layers.dropout(out, 0.25)
+
+    return logits
 
 def build_model(is_training, inputs, params):
     """Compute logits of the model (output distribution)
@@ -72,7 +113,9 @@ def model_fn(mode, inputs, params, reuse=False):
     with tf.variable_scope('model', reuse=reuse):
         # Compute the output distribution of the model and the predictions
         # logits = build_model(is_training, inputs, params)
-        logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
+        logits = build_vggnet_model(is_training, inputs)
+
+        # logits = DenseNet(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         # logits = DenseNetELU(x=inputs, params=params, reuse=reuse, is_training=is_training).model
         predictions = tf.argmax(logits, 1)
 
@@ -84,10 +127,9 @@ def model_fn(mode, inputs, params, reuse=False):
     if is_training:
         global_step = tf.train.get_or_create_global_step()
         learning_rate = params.learning_rate
-        # learning_rate = tf.train.exponential_decay(starter_learning_rate, global_step,
-        #                                            100000, 0.96, staircase=True)
+        learning_rate = tf.train.exponential_decay(learning_rate, global_step,
+                                                   10000, 0.96, staircase=True)
         optimizer = tf.train.AdamOptimizer(learning_rate)
-
         if params.use_batch_norm:
             # Add a dependency to update the moving mean and variance for batch normalization
             with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):

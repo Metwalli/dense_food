@@ -4,6 +4,7 @@ import tensorflow as tf
 import tensorflow
 import os
 
+
 def get_labels(imagePaths, classes):
     labels = []
     class_to_ix = dict(zip(classes, range(len(classes))))
