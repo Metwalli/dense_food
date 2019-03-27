@@ -60,7 +60,7 @@ def build_model(is_training, inputs, params):
         output: (tf.Tensor) output of the model
     """
     images = inputs['images']
-    print(images.get_shape().as_list())
+
     assert images.get_shape().as_list() == [None, params.image_size, params.image_size, 3]
 
     out = images
@@ -77,9 +77,9 @@ def build_model(is_training, inputs, params):
             out = tf.nn.relu(out)
             out = tf.layers.max_pooling2d(out, 2, 2)
 
-    assert out.get_shape().as_list() == [None, 8, 8, num_channels * 8]
+    assert out.get_shape().as_list() == [None, 4, 4, num_channels * 8]
 
-    out = tf.reshape(out, [-1, 8 * 8 * num_channels * 8])
+    out = tf.reshape(out, [-1, 4 * 4 * num_channels * 8])
     with tf.variable_scope('fc_1'):
         out = tf.layers.dense(out, num_channels * 8)
         if params.use_batch_norm:
